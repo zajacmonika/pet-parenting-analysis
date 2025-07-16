@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="pl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktywna Analiza: Psy Zamiast Dzieci</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: A single-page application with a top navigation bar allowing users to switch between thematic sections: a dashboard with key indicators, a deep dive into the Polish context, an exploration of the underlying reasons ("Why?"), a global perspective, and critical viewpoints. This non-linear, dashboard-like structure was chosen over a simple report layout to empower users to explore topics of interest in any order, facilitating better comprehension and engagement with the complex data. Key interactions include switching between content tabs and hovering over charts for detailed tooltips. -->
+    <!-- Visualization & Content Choices: 
+        - Goal: Inform/Overview -> Stat Cards (HTML/Tailwind) with large numbers and icons for immediate impact.
+        - Goal: Compare (Trends) -> Combination Line/Bar Chart (Chart.js) for Polish Fertility Rate vs. Dog Ownership. Justification: Visually demonstrates the core paradoxical divergence.
+        - Goal: Compare (Costs) -> Grouped Bar Chart (Chart.js) for Child vs. Dog Costs. Justification: Clearly illustrates the stark economic disparity.
+        - Goal: Compare (Attitudes) -> Horizontal Bar Chart (Chart.js) for "Pet as Child" sentiment across Europe. Justification: Provides easy cross-country comparison and context for Poland.
+        - Goal: Organize/Explain -> Clickable cards/accordion (HTML/JS) for complex topics like biological drivers. Justification: Breaks down dense information into manageable, user-initiated chunks.
+        - Goal: Organize/Critique -> Styled Table (HTML/Tailwind) for animal welfare concerns. Justification: Presents structured, comparative information clearly.
+        - Library/Method: All charts use Chart.js (Canvas). All diagrams and icons use HTML/Tailwind/Unicode. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #F9FAFB;
+            color: #1F2937;
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-button.active, .nav-button:hover {
+            color: #047857;
+            border-bottom-color: #047857;
+        }
+        .stat-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 45vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col sm:flex-row items-center justify-between py-4">
+                <h1 class="text-2xl sm:text-3xl font-bold text-emerald-800 mb-4 sm:mb-0">Pies Zamiast Dziecka: Interaktywna Analiza</h1>
+                <nav id="main-nav" class="flex flex-wrap justify-center gap-x-4 gap-y-2 sm:gap-x-6">
+                    <button data-target="dashboard" class="nav-button active text-sm sm:text-base font-semibold pb-1">Wskaźniki</button>
+                    <button data-target="polska" class="nav-button text-sm sm:text-base font-semibold pb-1">Polska</button>
+                    <button data-target="dlaczego" class="nav-button text-sm sm:text-base font-semibold pb-1">Dlaczego?</button>
+                    <button data-target="swiat" class="nav-button text-sm sm:text-base font-semibold pb-1">Świat</button>
+                    <button data-target="krytyka" class="nav-button text-sm sm:text-base font-semibold pb-1">Krytyka</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <!-- Section: Dashboard -->
+        <section id="dashboard" class="content-section">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Społeczny Paradoks w Liczbach</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Współczesna Polska to arena dwóch przeciwstawnych trendów: rekordowo niskiej dzietności i gwałtownego wzrostu populacji zwierząt domowych. Poniższe wskaźniki ilustrują skalę tej transformacji, która redefiniuje pojęcie rodziny i zmusza do refleksji nad przyszłością społeczeństwa.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                <div class="stat-card p-6 flex flex-col items-center text-center">
+                    <div class="text-6xl mb-4">📉</div>
+                    <h3 class="text-xl font-bold text-gray-700">Współczynnik Dzietności</h3>
+                    <p class="text-4xl font-bold text-red-600 my-2">1,099</p>
+                    <p class="text-gray-500">w 2024 roku – historyczne minimum i daleko od progu zastępowalności pokoleń (2,1).</p>
+                </div>
+                <div class="stat-card p-6 flex flex-col items-center text-center">
+                    <div class="text-6xl mb-4">🐕</div>
+                    <h3 class="text-xl font-bold text-gray-700">Gospodarstwa z Psem</h3>
+                    <p class="text-4xl font-bold text-emerald-600 my-2">49%</p>
+                    <p class="text-gray-500">w 2022 roku – najwyższy odsetek w Europie, pokazujący wyjątkową pozycję psów w polskich domach.</p>
+                </div>
+                <div class="stat-card p-6 flex flex-col items-center text-center">
+                    <div class="text-6xl mb-4">💰</div>
+                    <h3 class="text-xl font-bold text-gray-700">Koszt Wychowania (18 lat)</h3>
+                    <p class="text-2xl font-bold text-gray-800 my-2">Dziecko: ~346 000 zł</p>
+                    <p class="text-gray-500">vs. Pies: ~41-238 tys. zł. Decyzje finansowe mają realny wpływ na model rodziny.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Polska -->
+        <section id="polska" class="content-section hidden">
+             <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Polska na Kulturowym Rozdrożu</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Dane dla Polski ukazują fascynujący obraz kraju, w którym globalne trendy manifestują się z wyjątkową siłą. Zderzenie kryzysu demograficznego z "boomem" na posiadanie zwierząt tworzy unikalny kontekst społeczno-ekonomiczny. Poniższe wizualizacje pomagają zrozumieć skalę i przyczyny tego zjawiska.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-center mb-4">Trendy: Dzietność vs. Posiadanie Psa</h3>
+                    <div class="chart-container">
+                        <canvas id="trendsChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-center mb-4">Ekonomia Wyboru: Koszt Utrzymania (Rocznie)</h3>
+                     <div class="chart-container">
+                        <canvas id="costChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Dlaczego? -->
+        <section id="dlaczego" class="content-section hidden">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Anatomia "Pet Parentingu": Dlaczego Pies?</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Wybór psa zamiast dziecka rzadko jest powierzchowną fanaberią. U jego podstaw leżą głębokie mechanizmy biologiczne, psychologiczne i ewolucyjne, które w nowoczesnym świecie znajdują ujście w relacji z czworonogiem. To nie tyle zanik potrzeby tworzenia więzi, co jej adaptacja do nowych realiów.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                 <div class="stat-card p-6">
+                    <h3 class="text-xl font-bold mb-2">🧬 Neurobiologia Więzi</h3>
+                    <p class="text-gray-600">Interakcja z psem (głaskanie, kontakt wzrokowy) podnosi u człowieka poziom <strong>oksytocyny</strong> ("hormonu miłości") i obniża poziom <strong>kortyzolu</strong> (hormonu stresu). Co ciekawe, ten sam proces zachodzi u psa, tworząc biologiczną, dwukierunkową pętlę przywiązania, podobną do tej między matką a dzieckiem.</p>
+                </div>
+                <div class="stat-card p-6">
+                    <h3 class="text-xl font-bold mb-2">👪 Ewolucyjna Potrzeba Opieki</h3>
+                    <p class="text-gray-600">Jako gatunek, ludzie wyewoluowali do opieki nad potomstwem (*alloparenting*). Ta wrodzona, plastyczna potrzeba może być przekierowana na inne obiekty. W świecie wysokich kosztów rodzicielstwa, pies staje się dostępnym i satysfakcjonującym celem dla tego ewolucyjnego programu.</p>
+                </div>
+                <div class="stat-card p-6">
+                    <h3 class="text-xl font-bold mb-2">💖 Zaspokojenie Potrzeb Emocjonalnych</h3>
+                    <p class="text-gray-600">Pies oferuje bezwarunkową miłość i akceptację, redukując samotność i izolację. Daje poczucie sensu, wprowadza rutynę (spacery, karmienie) i odpowiedzialność, co jest cenne w zindywidualizowanym, często chaotycznym świecie.</p>
+                </div>
+            </div>
+             <div class="mt-8 bg-white p-6 rounded-lg shadow-lg">
+                <h3 class="text-2xl font-bold text-center mb-4">Pies jako "Substytut" czy "Kompromis"?</h3>
+                <p class="text-gray-700 text-center max-w-4xl mx-auto">Termin "substytut" jest uproszczeniem. Badania sugerują, że bardziej trafne jest słowo <strong>"kompromis"</strong> (*trade-off*). "Psi rodzice" świadomie wybierają relację, która daje wiele emocjonalnych korzyści rodzicielstwa (miłość, przywiązanie) przy znacznie mniejszych kosztach finansowych, czasowych i osobistych. To adaptacyjna strategia maksymalizacji dobrostanu psychicznego w wymagających warunkach.</p>
+            </div>
+        </section>
+
+        <!-- Section: Swiat -->
+        <section id="swiat" class="content-section hidden">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Globalny Fenomen: "Pet Parenting" na Świecie</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Trend posiadania "psa zamiast dziecka" nie jest polską specyfiką. To globalne zjawisko zakorzenione w procesach demograficznych i kulturowych, które od lat kształtują kraje rozwinięte. Różnice w jego intensywności pokazują jednak, jak lokalna kultura filtruje i adaptuje globalne tendencje.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                <div class="lg:col-span-3 bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-center mb-4">Postawy w Europie: Czy traktujesz psa jak dziecko?</h3>
+                    <p class="text-center text-gray-500 text-sm mb-4">(Odsetek właścicieli deklarujących taką postawę)</p>
+                     <div class="chart-container">
+                        <canvas id="attitudesChart"></canvas>
+                    </div>
+                </div>
+                <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-lg flex flex-col justify-center">
+                    <h3 class="text-xl font-bold mb-4">Studium przypadku: Azja Wschodnia</h3>
+                    <p class="text-gray-700 mb-4"><strong>Japonia i Korea Południowa</strong> to ekstrema tego trendu. Notują najniższe wskaźniki dzietności na świecie. Wysokie koszty życia, presja na sukces i długie godziny pracy sprawiają, że opieka nad psem to dla wielu jedyna dostępna forma realizacji potrzeby bliskości.</p>
+                    <div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 p-4 rounded-r-lg">
+                        <p class="font-bold">Symboliczny fakt:</p>
+                        <p>W Korei Płd. sprzedaż wózków dla psów (57%) przewyższyła sprzedaż wózków dla dzieci (43%).</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Krytyka -->
+        <section id="krytyka" class="content-section hidden">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Perspektywy Krytyczne i Długofalowe Skutki</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Mimo wielu korzyści dla właścicieli, zjawisko "pet parentingu" budzi uzasadnione obawy etyczne i socjologiczne. Jego rosnąca skala niesie ze sobą również poważne, długoterminowe konsekwencje dla dobrostanu zwierząt i całych społeczeństw.</p>
+            </div>
+            <div class="space-y-8">
+                <div class="stat-card p-6">
+                    <h3 class="text-xl font-bold mb-3">🐾 Dobrostan Zwierząt a Antropomorfizm</h3>
+                    <p class="text-gray-600 mb-4">Paradoks humanizacji: traktowanie psa jak dziecka, choć wynika z miłości, może mu szkodzić. Ignorowanie jego gatunkowych potrzeb (węszenie, swobodny ruch, kontakty z innymi psami) na rzecz ludzkich projekcji (noszenie w torebce, przekarmianie "smakołykami") prowadzi do frustracji, lęku, otyłości i problemów behawioralnych.</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="p-3 font-bold uppercase text-gray-600 text-sm border">Ludzka potrzeba</th>
+                                    <th class="p-3 font-bold uppercase text-gray-600 text-sm border">Potrzeba gatunkowa psa</th>
+                                    <th class="p-3 font-bold uppercase text-gray-600 text-sm border">Potencjalny konflikt</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="p-3 text-gray-800 border">"Chcę, by był bezpieczny"</td>
+                                    <td class="p-3 text-gray-800 border">Eksploracja, socjalizacja</td>
+                                    <td class="p-3 text-gray-800 border">Frustracja, lęk</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="p-3 text-gray-800 border">"Zasługuje na to co najlepsze"</td>
+                                    <td class="p-3 text-gray-800 border">Zbilansowana dieta</td>
+                                    <td class="p-3 text-gray-800 border">Otyłość, choroby</td>
+                                </tr>
+                                 <tr class="hover:bg-gray-50">
+                                    <td class="p-3 text-gray-800 border">"Nie będę go karcić"</td>
+                                    <td class="p-3 text-gray-800 border">Jasne zasady, struktura</td>
+                                    <td class="p-3 text-gray-800 border">Niepewność, agresja</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="stat-card p-6">
+                        <h3 class="text-xl font-bold mb-3">🧐 Krytyka Socjologiczna</h3>
+                        <p class="text-gray-600">Krytycy wskazują, że język rodzicielstwa ("psia mama") może maskować fundamentalną relację <strong>własności</strong>, a nie partnerstwa. Ponadto, model "humanistyczny" (pies jako dziecko) jest znacznie częstszy wśród zamożniejszych, miejskich klas społecznych, co pokazuje, że jest to również zjawisko klasowe.</p>
+                    </div>
+                     <div class="stat-card p-6">
+                        <h3 class="text-xl font-bold mb-3">👵 Długofalowe Skutki Społeczne</h3>
+                        <p class="text-gray-600">Starzenie się społeczeństwa bezdzietnych "pet parentów" to ogromne wyzwanie dla państwa opiekuńczego. Systemy emerytalne i zdrowotne, oparte na założeniu wsparcia ze strony dzieci, staną w obliczu bezprecedensowego zapotrzebowania na usługi publiczne, co generuje ogromne obciążenia finansowe.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-12">
+        <div class="container mx-auto p-6 text-center">
+            <p class="mb-2">Ta interaktywna aplikacja została stworzona na podstawie raportu "Pies Zamiast Dziecka? Wielowymiarowa Analiza Zjawiska 'Pet Parentingu' w Polsce i na Świecie".</p>
+            <p class="text-sm text-gray-400">Dane pochodzą m.in. z GUS, FEDIAF, Centrum im. Adama Smitha, Mintel oraz badań naukowych.</p>
+        </div>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const navButtons = document.querySelectorAll('.nav-button');
+        const contentSections = document.querySelectorAll('.content-section');
+        const mainNav = document.getElementById('main-nav');
+
+        const data = {
+            trends: {
+                labels: ['2016', '2020', '2022', '2024'],
+                datasets: [
+                    {
+                        label: 'Współczynnik Dzietności (TFR)',
+                        data: [1.357, 1.378, 1.261, 1.099],
+                        borderColor: '#DC2626',
+                        backgroundColor: '#FEE2E2',
+                        type: 'line',
+                        yAxisID: 'yTFR',
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Gospodarstwa domowe z psem (%)',
+                        data: [42, 45, 49, null],
+                        backgroundColor: '#059669',
+                        type: 'bar',
+                        yAxisID: 'yDog',
+                    }
+                ]
+            },
+            costs: {
+                labels: ['Koszt roczny (średni)'],
+                datasets: [
+                    {
+                        label: 'Dziecko',
+                        data: [19224],
+                        backgroundColor: '#BE123C',
+                        
+                    },
+                     {
+                        label: 'Pies (min)',
+                        data: [2280],
+                        backgroundColor: '#047857',
+                    },
+                    {
+                        label: 'Pies (max)',
+                        data: [13200],
+                        backgroundColor: '#10B981',
+                    }
+                ]
+            },
+            attitudes: {
+                labels: ['Niemcy', 'Hiszpania', 'Polska', 'Francja', 'Włochy'],
+                datasets: [{
+                    label: 'Odsetek traktujących zwierzę jak dziecko (%)',
+                    data: [75, 64, 63, 61, 58],
+                    backgroundColor: ['#065F46', '#047857', '#10B981', '#34D399', '#6EE7B7'],
+                }]
+            }
+        };
+
+        let trendsChart, costChart, attitudesChart;
+
+        function createTrendsChart() {
+            if(trendsChart) trendsChart.destroy();
+            const ctx = document.getElementById('trendsChart').getContext('2d');
+            trendsChart = new Chart(ctx, {
+                type: 'bar',
+                data: data.trends,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        yTFR: {
+                            type: 'linear',
+                            position: 'left',
+                            title: { display: true, text: 'Współczynnik TFR' },
+                            min: 1,
+                            max: 1.5,
+                        },
+                        yDog: {
+                            type: 'linear',
+                            position: 'right',
+                            title: { display: true, text: 'Odsetek %' },
+                            min: 40,
+                            max: 50,
+                            grid: { drawOnChartArea: false }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y;
+                                        if (context.dataset.yAxisID === 'yDog') {
+                                            label += '%';
+                                        }
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createCostChart() {
+            if(costChart) costChart.destroy();
+            const ctx = document.getElementById('costChart').getContext('2d');
+            costChart = new Chart(ctx, {
+                type: 'bar',
+                data: data.costs,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                     plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y.toLocaleString('pl-PL')} zł`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString('pl-PL') + ' zł'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createAttitudesChart() {
+            if(attitudesChart) attitudesChart.destroy();
+            const ctx = document.getElementById('attitudesChart').getContext('2d');
+            attitudesChart = new Chart(ctx, {
+                type: 'bar',
+                data: data.attitudes,
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                             callbacks: {
+                                label: function(context) {
+                                    return ` ${context.parsed.x}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '%'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        const chartInitializers = {
+            'polska': [createTrendsChart, createCostChart],
+            'swiat': [createAttitudesChart]
+        };
+
+        mainNav.addEventListener('click', (e) => {
+            if (e.target.matches('.nav-button')) {
+                const targetId = e.target.dataset.target;
+
+                navButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.target === targetId);
+                });
+
+                contentSections.forEach(section => {
+                    section.classList.toggle('hidden', section.id !== targetId);
+                });
+                
+                if (chartInitializers[targetId]) {
+                    setTimeout(() => {
+                         chartInitializers[targetId].forEach(initFunc => initFunc());
+                    }, 50);
+                }
+            }
+        });
+    });
+    </script>
+</body>
+</html>
